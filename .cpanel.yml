@@ -1,0 +1,18 @@
+---
+deployment:
+  tasks:
+    # App root created in "Setup Node.js App" and the Node environment cPanel made for it
+    - export DEPLOYPATH=$HOME/formcraft-app
+    - export NODEBIN=$(ls -d $HOME/nodevenv/formcraft-app/*/bin | head -n 1)
+    - export PATH=$NODEBIN:$PATH
+    # Replace the previous build, then unpack source + new build over the app root (.env is untouched)
+    - /bin/rm -rf $DEPLOYPATH/.next
+    - /bin/tar --exclude=.git -czf /tmp/formcraft-deploy.tgz .
+    - /bin/tar -xzf /tmp/formcraft-deploy.tgz -C $DEPLOYPATH
+    - /bin/rm -f /tmp/formcraft-deploy.tgz
+    # Dependencies and database schema (db push refuses destructive changes, so a risky deploy fails visibly)
+    - cd $DEPLOYPATH && npm install --include=dev
+    - cd $DEPLOYPATH && npx prisma db push
+    # Restart the Node app
+    - /bin/mkdir -p $DEPLOYPATH/tmp
+    - /bin/touch $DEPLOYPATH/tmp/restart.txt

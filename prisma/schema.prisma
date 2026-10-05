@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum QuestionnaireStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// ---- Better Auth core tables ----
+model User {
+  id            String         @id
+  name          String
+  email         String         @unique
+  emailVerified Boolean        @default(false)
+  image         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  questionnaires Questionnaire[]
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+}
+
+// ---- Questionnaire domain ----
+model Questionnaire {
+  id          String              @id @default(cuid())
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  slug        String              @unique
+  status      QuestionnaireStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  questions   Question[]
+  responses   Response[]
+
+  @@index([userId, updatedAt])
+}
+
+model Question {
+  id              String        @id @default(cuid())
+  questionnaireId String
+  questionnaire   Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+  type            String // text | textarea | number | email | select | radio | checkbox | boolean | date | rating
+  label           String
+  description     String?
+  required        Boolean       @default(false)
+  order           Int
+  settings        Json          @default("{}")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  answers         Answer[]
+
+  @@index([questionnaireId, order])
+}
+
+model Response {
+  id              String        @id @default(cuid())
+  questionnaireId String
+  questionnaire   Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+  submittedAt     DateTime      @default(now())
+  metadata        Json?
+  answers         Answer[]
+
+  @@index([questionnaireId, submittedAt])
+}
+
+// questionLabel/questionType are snapshots taken at submission time, so a response
+// stays readable even if its question is later deleted (questionId becomes NULL).
+model Answer {
+  id            String    @id @default(cuid())
+  responseId    String
+  response      Response  @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  questionId    String?
+  question      Question? @relation(fields: [questionId], references: [id], onDelete: SetNull)
+  questionLabel String
+  questionType  String
+  value         Json
+
+  @@index([responseId])
+  @@index([questionId])
+}

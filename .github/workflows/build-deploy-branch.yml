@@ -1,0 +1,39 @@
+# On every push to main: build the app on GitHub, then publish source + .next to the `deploy` branch.
+# cPanel pulls the `deploy` branch, so the shared server never has to run `next build`.
+name: Build deploy branch
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      - name: Publish deploy branch
+        run: |
+          set -e
+          rm -rf node_modules .next/cache
+          mkdir /tmp/out
+          cp -a . /tmp/out
+          cd /tmp/out
+          rm -rf .git .github
+          git init -q -b deploy
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git fetch -q origin deploy || true
+          git reset -q --soft origin/deploy 2>/dev/null || true   # keep history so cPanel can fast-forward
+          git add -A -f .
+          git -c user.name="github-actions" -c user.email="actions@users.noreply.github.com" \
+            commit -q --allow-empty -m "Build ${GITHUB_SHA}"
+          git push -q origin deploy
