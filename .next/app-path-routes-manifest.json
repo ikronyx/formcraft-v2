@@ -1,0 +1,14 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/auth/[...all]/route": "/api/auth/[...all]",
+  "/api/questionnaires/[id]/export/route": "/api/questionnaires/[id]/export",
+  "/page": "/",
+  "/f/[slug]/page": "/f/[slug]",
+  "/(auth)/login/page": "/login",
+  "/(dashboard)/questionnaires/[id]/edit/page": "/questionnaires/[id]/edit",
+  "/(auth)/register/page": "/register",
+  "/(dashboard)/dashboard/page": "/dashboard",
+  "/(dashboard)/questionnaires/new/page": "/questionnaires/new",
+  "/(dashboard)/questionnaires/page": "/questionnaires",
+  "/(dashboard)/questionnaires/[id]/responses/page": "/questionnaires/[id]/responses"
+}

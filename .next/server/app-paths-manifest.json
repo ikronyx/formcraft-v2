@@ -1,0 +1,14 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/[...all]/route": "app/api/auth/[...all]/route.js",
+  "/api/questionnaires/[id]/export/route": "app/api/questionnaires/[id]/export/route.js",
+  "/page": "app/page.js",
+  "/f/[slug]/page": "app/f/[slug]/page.js",
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/(dashboard)/questionnaires/[id]/edit/page": "app/(dashboard)/questionnaires/[id]/edit/page.js",
+  "/(auth)/register/page": "app/(auth)/register/page.js",
+  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
+  "/(dashboard)/questionnaires/new/page": "app/(dashboard)/questionnaires/new/page.js",
+  "/(dashboard)/questionnaires/page": "app/(dashboard)/questionnaires/page.js",
+  "/(dashboard)/questionnaires/[id]/responses/page": "app/(dashboard)/questionnaires/[id]/responses/page.js"
+}
